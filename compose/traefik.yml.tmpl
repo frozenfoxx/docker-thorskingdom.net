@@ -1,0 +1,52 @@
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command:
+      #- "--api.insecure=true"
+
+      # Entrypoints
+      - "--entrypoints.mqtt.address=:1883"
+      - "--entrypoints.mqttsecure.address=:8883"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      #- "--entrypoints.websocket.address=:9001"
+
+      # Certificate Resolvers
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=30"
+      - "--certificatesResolvers.letsencrypt.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53"
+      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+
+      # Logging
+      #- "--log.level=DEBUG"
+      - "--log.level=ERROR"
+
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/data/conf"
+      - "--providers.file.watch=true"
+      #- "--serverstransport.insecureskipverify=true"
+    environment:
+      - CF_API_EMAIL=${TRAEFIK_EMAIL}
+      - CLOUDFLARE_DNS_API_TOKEN=${TRAEFIK_CLOUDFLARE_API_KEY}
+      - CLOUDFLARE_ZONE_API_TOKEN=${TRAEFIK_CLOUDFLARE_API_KEY}
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      #- "1883:1883"
+      #- "8080:8080"
+      #- "8883:8883"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DATA_PREFIX}/traefik:/data
+    labels:
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.foxhole-ips.ipallowlist.sourcerange=${TRAEFIK_ALLOWRANGE}"

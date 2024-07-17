@@ -1,0 +1,48 @@
+---
+version: "3"
+
+dotenv: [".env"]
+
+env:
+  ROOT_DIR: "{{.ROOT_DIR}}"
+
+includes:
+  git:
+    taskfile: .taskfiles/git.tasks.yml
+    optional: true
+    internal: true
+
+  docker:
+    taskfile: .taskfiles/docker.tasks.yml
+    optional: true
+    internal: true
+
+tasks:
+  default:
+    cmds:
+      - task -l
+    silent: true
+
+  deploy:
+    desc: Deploy containers
+    cmds:
+      - task: docker:compose:deploy
+        vars:
+          CLI_ARGS: "{{.CLI_ARGS}}"
+
+  lint:
+    desc: Check the syntax on scripts
+    cmds:
+      - shellcheck "{{.ROOT_DIR}}/scripts/*.sh"
+
+  setup:
+    desc: "Configure repository for use"
+    cmds:
+      - "{{.ROOT_DIR}}/scripts/configure_templates.sh"
+
+  update:
+    desc: "Update repo"
+    cmds:
+      - rm -rf .taskfiles
+      - git clone https://github.com/frozenfoxx/taskfiles.git .taskfiles
+      - git pull --rebase
