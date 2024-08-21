@@ -9,8 +9,8 @@ services:
       - JELLYFIN_PublishedServerUrl=jellyfin.${NETWORK_DOMAIN-thorskingdom.net}
     volumes:
       - ${DATA_PREFIX-/data}/jellyfin/library:/config
-      - ${MEDIA_PREFIX-/data}/Music:/data/Music
-      - ${MEDIA_PREFIX-/data}/Videos:/data/Videos
+      - ${MEDIA_PREFIX-/mnt}/Music:/data/Music
+      - ${MEDIA_PREFIX-/mnt}/Videos:/data/Videos
     ports:
       - 8096:8096
       - 8920:8920 #optional
