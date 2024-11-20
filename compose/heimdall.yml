@@ -7,7 +7,7 @@ services:
       PGID: 1000
       TZ: America/Los_Angeles
     volumes:
-      - ${DATA_PREFIX-/data}/heimdall:/config
+      - heimdall-data:/config
     #ports:
     #  - 443:443
     restart: unless-stopped
@@ -17,6 +17,13 @@ services:
       - "traefik.http.routers.heimdall.entrypoints=websecure"
       - "traefik.http.routers.heimdall.tls.certresolver=letsencrypt"
       - "traefik.http.routers.heimdall.service=heimdall"
-      #- "traefik.http.routers.heimdall.middlewares=foxhole-ips@docker"
       - "traefik.http.services.heimdall.loadbalancer.server.port=80"
       - "traefik.http.services.heimdall.loadbalancer.server.scheme=http"
+
+volumes:
+  heimdall-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${DATA_HOST},nolock,soft,rw"
+      device: ":/volume1/Docker/heimdall"
