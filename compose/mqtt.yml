@@ -1,0 +1,60 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    volumes:
+      - mosquitto-config:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    #ports:
+    #  - 1883:1883
+    #  - 8883:8883
+    #  - 9001:9001
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+
+      # TCP Insecure
+      - "traefik.tcp.routers.mqtt.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.mqtt.entrypoints=mqtt"
+      - "traefik.tcp.routers.mqtt.service=mqtt"
+
+      # TCP Secure
+      - "traefik.tcp.routers.mqttsecure.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.mqttsecure.entrypoints=mqttsecure"
+      - "traefik.tcp.routers.mqttsecure.tls=true"
+      #- "traefik.tcp.routers.mqtt.tls.certresolver=letsencrypt"
+      - "traefik.tcp.routers.mqttsecure.service=mqttsecure"
+      
+      # Websocket
+      #- "traefik.tcp.routers.mqtt-ws.rule=HostSNI(`*`)"
+      #- "traefik.tcp.routers.mqtt-ws.entrypoints=mqttwebsocket"
+      #- "traefik.tcp.routers.mqtt-ws.tls.certresolver=letsencrypt"
+      #- "traefik.tcp.routers.mqtt-ws.service=mqtt-websocket"
+      #- "traefik.tcp.services.mqtt-ws.loadbalancer.server.port=9001"
+
+      # Load Balancer
+      - "traefik.tcp.services.mqtt.loadbalancer.server.port=1883"
+      - "traefik.tcp.services.mqttsecure.loadbalancer.server.port=8883"
+
+volumes:
+  mosquitto-config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${DATA_HOST},nolock,soft,rw"
+      device: ":/volume1/Docker/mqtt/config"
+
+  mosquitto-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${DATA_HOST},nolock,soft,rw"
+      device: ":/volume1/Docker/mqtt/data"
+
+  mosquitto-log:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${DATA_HOST},nolock,soft,rw"
+      device: ":/volume1/Docker/mqtt/log"
