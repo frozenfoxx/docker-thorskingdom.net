@@ -30,10 +30,24 @@ tasks:
         vars:
           CLI_ARGS: "{{.CLI_ARGS}}"
 
+  destroy:
+    desc: Destroy containers
+    cmds:
+      - task: docker:compose:destroy
+        vars:
+          CLI_ARGS: "{{.CLI_ARGS}}"
+
   lint:
     desc: Check the syntax on scripts
     cmds:
       - shellcheck "{{.ROOT_DIR}}/scripts/*.sh"
+
+  logs:
+    desc: "Check a container's logs"
+    cmds:
+      - task: docker:compose:logs
+        vars:
+          CLI_ARGS: "{{.CLI_ARGS}}"
 
   setup:
     desc: "Configure repository for use"
@@ -46,3 +60,10 @@ tasks:
       - rm -rf .taskfiles
       - git clone https://github.com/frozenfoxx/taskfiles.git .taskfiles
       - git pull --rebase
+
+  upgrade:
+    desc: "Upgrade a container"
+    cmds:
+      - task: docker:compose:upgrade
+        vars:
+          CLI_ARGS: "{{.CLI_ARGS}}"
